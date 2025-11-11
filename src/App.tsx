@@ -10,6 +10,7 @@ import About from './pages/About';
 import Blog from './pages/Blog';
 import AutomationScorecard from './pages/AutomationScorecard';
 import AssemblyDesign from './pages/AssemblyDesign';
+import AIAgentLanding from './pages/AIAgentLanding';
 import ThemeDemo from './components/ThemeDemo';
 import './App.css';
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="blog" element={<Blog />} />
           <Route path="automation-scorecard" element={<AutomationScorecard />} />
           <Route path="assembly-design" element={<AssemblyDesign />} />
+          <Route path="ai-agent-landing" element={<AIAgentLanding />} />
           <Route path="theme-demo" element={<ThemeDemo />} />
         </Route>
       </Routes>
