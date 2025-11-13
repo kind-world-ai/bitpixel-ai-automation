@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import React, { Suspense } from 'react';
+import { motion } from 'framer-motion';
 import {
   Lightbulb,
   Workflow,
@@ -19,16 +19,15 @@ import {
   FileText,
   Code,
   Wand2,
-  Settings,
-  Cog,
   Package,
-  CheckCircle,
   Layers,
-  Zap as ZapIcon
+  Zap as ZapIcon,
+  Loader
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import AssemblyMachine3D from '../components/AssemblyMachine3D';
 
 // Input sources that flow into the machine
 const inputSources = [
@@ -45,15 +44,6 @@ const outputCards = [
   { title: 'Dashboard UI', desc: 'Responsive analytics panel', gradient: 'from-blue-500 to-purple-500', icon: LayoutDashboard },
   { title: 'Automation Flow', desc: 'Multi-step workflow', gradient: 'from-purple-500 to-pink-500', icon: Workflow },
   { title: 'Data Cards', desc: 'Modern card components', gradient: 'from-orange-500 to-red-500', icon: Layers }
-];
-
-// Processing stages
-const processingStages = [
-  { label: 'Analyzing', icon: Gauge, color: 'text-blue-400' },
-  { label: 'Processing', icon: Cpu, color: 'text-purple-400' },
-  { label: 'Assembling', icon: Settings, color: 'text-orange-400' },
-  { label: 'Optimizing', icon: Sparkles, color: 'text-green-400' },
-  { label: 'Complete', icon: CheckCircle, color: 'text-emerald-400' }
 ];
 
 // Service features
@@ -152,69 +142,6 @@ const timeline = [
 ];
 
 const AssemblyDesign: React.FC = () => {
-  const [currentInputIndex, setCurrentInputIndex] = useState(0);
-  const [currentOutputIndex, setCurrentOutputIndex] = useState(0);
-  const [currentStage, setCurrentStage] = useState(0);
-  const [flowingItems, setFlowingItems] = useState<Array<{ id: number; source: typeof inputSources[0]; position: number }>>([]);
-  const [itemIdCounter, setItemIdCounter] = useState(0);
-
-  // Animation controls
-  const gearControls = useAnimation();
-
-  useEffect(() => {
-    // Continuous gear rotation
-    gearControls.start({
-      rotate: 360,
-      transition: {
-        duration: 4,
-        repeat: Infinity,
-        ease: "linear"
-      }
-    });
-  }, [gearControls]);
-
-  useEffect(() => {
-    // Pipeline flow system
-    const pipelineInterval = setInterval(() => {
-      // Add new item to pipeline
-      setFlowingItems(prev => [
-        ...prev,
-        {
-          id: itemIdCounter,
-          source: inputSources[currentInputIndex],
-          position: 0
-        }
-      ]);
-      setItemIdCounter(prev => prev + 1);
-      setCurrentInputIndex((prev) => (prev + 1) % inputSources.length);
-    }, 3000);
-
-    // Move items through pipeline
-    const flowInterval = setInterval(() => {
-      setFlowingItems(prev =>
-        prev
-          .map(item => ({ ...item, position: item.position + 1 }))
-          .filter(item => item.position < 6) // Remove completed items
-      );
-    }, 600);
-
-    // Cycle through processing stages
-    const stageInterval = setInterval(() => {
-      setCurrentStage((prev) => (prev + 1) % processingStages.length);
-    }, 1200);
-
-    // Cycle output cards
-    const outputInterval = setInterval(() => {
-      setCurrentOutputIndex((prev) => (prev + 1) % outputCards.length);
-    }, 3000);
-
-    return () => {
-      clearInterval(pipelineInterval);
-      clearInterval(flowInterval);
-      clearInterval(stageInterval);
-      clearInterval(outputInterval);
-    };
-  }, [currentInputIndex, itemIdCounter]);
 
   return (
     <div className="min-h-screen bg-background text-foreground pt-16">
@@ -297,210 +224,125 @@ const AssemblyDesign: React.FC = () => {
             </motion.p>
           </motion.div>
 
-          {/* Mechanical Assembly Line Visualization */}
-          <div className="relative max-w-7xl mx-auto mb-16">
-            {/* Assembly Line Pipeline */}
-            <div className="relative bg-card/50 backdrop-blur-sm border border-border rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden">
-              {/* Conveyor Belt Base */}
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-r from-border via-primary/20 to-border" />
-              <div className="absolute bottom-0 left-0 right-0 h-1">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-transparent via-primary to-transparent"
-                  animate={{ x: ['-100%', '100%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                />
-              </div>
-
-              {/* Assembly Line Stages */}
-              <div className="grid grid-cols-5 gap-4 md:gap-6 mb-8">
-                {/* Input Stage */}
-                <div className="col-span-1 flex flex-col items-center">
-                  <motion.div
-                    className="relative w-16 h-16 md:w-20 md:h-20 mb-3"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                  >
-                    <div className="absolute inset-0 bg-primary/10 rounded-2xl" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        animate={{ rotate: [0, 15, -15, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <Package className="w-8 h-8 md:w-10 md:h-10 text-primary" />
-                      </motion.div>
-                    </div>
-                  </motion.div>
+          {/* 3D CNC Assembly Machine Visualization */}
+          <motion.div
+            className="relative max-w-7xl mx-auto mb-16"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, type: "spring" }}
+          >
+            <Suspense
+              fallback={
+                <div className="w-full h-[600px] rounded-2xl bg-gradient-to-br from-slate-950 to-slate-900 flex items-center justify-center border border-border">
                   <div className="text-center">
-                    <div className="text-xs md:text-sm font-semibold text-foreground">Input</div>
-                    <div className="text-xs text-muted-foreground">Sources</div>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="inline-block mb-4"
+                    >
+                      <Loader className="w-12 h-12 text-primary" />
+                    </motion.div>
+                    <p className="text-muted-foreground">Loading 3D Assembly Machine...</p>
                   </div>
                 </div>
+              }
+            >
+              <AssemblyMachine3D />
+            </Suspense>
 
-                {/* Processing Stages (3 stages) */}
-                {processingStages.slice(0, 3).map((stage, idx) => {
-                  const StageIcon = stage.icon;
-                  const isActive = currentStage === idx;
-                  return (
-                    <div key={idx} className="col-span-1 flex flex-col items-center">
-                      <motion.div
-                        className="relative w-16 h-16 md:w-20 md:h-20 mb-3"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 200, delay: 0.2 + idx * 0.1 }}
-                      >
-                        {/* Rotating gear background */}
-                        <motion.div
-                          className="absolute inset-0 flex items-center justify-center"
-                          animate={gearControls}
-                        >
-                          <Cog className={`w-full h-full ${isActive ? 'text-primary/30' : 'text-muted/30'}`} />
-                        </motion.div>
+            {/* 3D Scene Description */}
+            <motion.div
+              className="mt-6 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <p className="text-sm text-muted-foreground mb-2">
+                <Sparkles className="w-4 h-4 inline mr-2 text-primary" />
+                Interactive 3D CNC Assembly Line
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Drag to rotate • Scroll to zoom • Watch raw inputs transform into polished UI cards
+              </p>
+            </motion.div>
+          </motion.div>
 
-                        {/* Stage icon */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <motion.div
-                            animate={{
-                              scale: isActive ? [1, 1.2, 1] : 1,
-                            }}
-                            transition={{ duration: 0.6, repeat: Infinity }}
-                          >
-                            <StageIcon className={`w-6 h-6 md:w-8 md:h-8 ${isActive ? stage.color : 'text-muted-foreground'}`} />
-                          </motion.div>
-                        </div>
-
-                        {/* Active indicator */}
-                        {isActive && (
-                          <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-primary"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1.2, opacity: 0 }}
-                            transition={{ duration: 1, repeat: Infinity }}
-                          />
-                        )}
-                      </motion.div>
-                      <div className="text-center">
-                        <div className={`text-xs md:text-sm font-semibold ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
-                          {stage.label}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Output Stage */}
-                <div className="col-span-1 flex flex-col items-center">
-                  <motion.div
-                    className="relative w-16 h-16 md:w-20 md:h-20 mb-3"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-primary" />
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                  <div className="text-center">
-                    <div className="text-xs md:text-sm font-semibold text-foreground">Output</div>
-                    <div className="text-xs text-muted-foreground">Ready UI</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Flowing Items Through Pipeline */}
-              <div className="relative h-16 mb-6">
-                <AnimatePresence>
-                  {flowingItems.map((item) => {
-                    const ItemIcon = item.source.icon;
-                    const xPosition = `${item.position * 20}%`;
-
-                    return (
-                      <motion.div
-                        key={item.id}
-                        className={`absolute top-1/2 -translate-y-1/2 ${item.source.bgColor} ${item.source.borderColor} border rounded-lg p-2 shadow-lg`}
-                        initial={{ x: '-10%', opacity: 0, scale: 0.5 }}
-                        animate={{ x: xPosition, opacity: 1, scale: 1 }}
-                        exit={{ x: '110%', opacity: 0, scale: 0.5 }}
-                        transition={{ type: "spring", stiffness: 100, damping: 15 }}
-                      >
-                        <ItemIcon className={`w-5 h-5 ${item.source.color}`} />
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-
-              {/* Input/Output Display */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Input Sources Grid */}
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <ArrowRight className="w-4 h-4 text-primary" />
+          {/* Input/Output Info Cards */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            {/* Input Sources */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <ArrowRight className="w-5 h-5 text-primary" />
                     Integration Sources
-                  </h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-3">
                     {inputSources.map((source, idx) => {
                       const Icon = source.icon;
                       return (
                         <motion.div
                           key={idx}
-                          className={`p-3 rounded-lg border transition-all ${source.bgColor} ${source.borderColor}`}
-                          whileHover={{ scale: 1.05 }}
+                          className={`p-4 rounded-lg border transition-all ${source.bgColor} ${source.borderColor} hover:scale-105 cursor-pointer`}
+                          whileHover={{ y: -5 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          <Icon className={`w-6 h-6 ${source.color} mx-auto mb-1`} />
-                          <div className="text-xs text-center text-muted-foreground">{source.label}</div>
+                          <Icon className={`w-6 h-6 ${source.color} mx-auto mb-2`} />
+                          <div className="text-xs text-center font-medium text-foreground">{source.label}</div>
                         </motion.div>
                       );
                     })}
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                {/* Output Cards Display */}
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    Production Output
-                  </h3>
-                  <AnimatePresence mode="wait">
+            {/* Output Products */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    Production Outputs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
                     {outputCards.map((card, idx) => {
-                      if (idx !== currentOutputIndex) return null;
                       const CardIcon = card.icon;
                       return (
                         <motion.div
-                          key={card.title}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          transition={{ type: "spring", stiffness: 200 }}
-                          className="bg-card border border-border rounded-lg p-4 shadow-lg"
+                          key={idx}
+                          className="bg-background border border-border rounded-lg p-3 hover:border-primary/50 transition-all cursor-pointer"
+                          whileHover={{ x: 5 }}
                         >
-                          <div className={`h-1 w-full rounded-full bg-gradient-to-r ${card.gradient} mb-3`} />
-                          <div className="flex items-start gap-3">
+                          <div className={`h-1 w-full rounded-full bg-gradient-to-r ${card.gradient} mb-2`} />
+                          <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-lg bg-gradient-to-br ${card.gradient} bg-opacity-10`}>
                               <CardIcon className="w-5 h-5 text-primary" />
                             </div>
                             <div className="flex-1">
-                              <div className="font-semibold text-foreground mb-1">{card.title}</div>
+                              <div className="font-semibold text-foreground text-sm">{card.title}</div>
                               <div className="text-xs text-muted-foreground">{card.desc}</div>
                             </div>
                           </div>
                         </motion.div>
                       );
                     })}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
           {/* Service Features Cards */}
