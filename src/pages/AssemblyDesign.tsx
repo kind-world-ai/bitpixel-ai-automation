@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import {
   Lightbulb,
   Workflow,
@@ -18,7 +18,13 @@ import {
   Database,
   FileText,
   Code,
-  Wand2
+  Wand2,
+  Settings,
+  Cog,
+  Package,
+  CheckCircle,
+  Layers,
+  Zap as ZapIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -26,19 +32,36 @@ import { Button } from '../components/ui/button';
 
 // Input sources that flow into the machine
 const inputSources = [
-  { icon: Mail, label: 'Gmail', color: 'text-red-500' },
-  { icon: Slack, label: 'Slack', color: 'text-purple-500' },
-  { icon: Zap, label: 'Zapier', color: 'text-orange-500' },
-  { icon: Database, label: 'CRM', color: 'text-blue-500' },
-  { icon: FileText, label: 'Forms', color: 'text-green-500' },
-  { icon: Code, label: 'APIs', color: 'text-cyan-500' }
+  { icon: Mail, label: 'Gmail', color: 'text-red-500', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/30' },
+  { icon: Slack, label: 'Slack', color: 'text-purple-500', bgColor: 'bg-purple-500/10', borderColor: 'border-purple-500/30' },
+  { icon: Zap, label: 'Zapier', color: 'text-orange-500', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/30' },
+  { icon: Database, label: 'CRM', color: 'text-blue-500', bgColor: 'bg-blue-500/10', borderColor: 'border-blue-500/30' },
+  { icon: FileText, label: 'Forms', color: 'text-green-500', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/30' },
+  { icon: Code, label: 'APIs', color: 'text-cyan-500', bgColor: 'bg-cyan-500/10', borderColor: 'border-cyan-500/30' }
 ];
 
 // Output cards that come out of the machine
 const outputCards = [
-  { title: 'Dashboard UI', desc: 'Responsive analytics panel', gradient: 'from-blue-500 to-purple-500' },
-  { title: 'Automation Flow', desc: 'Multi-step workflow', gradient: 'from-purple-500 to-pink-500' },
-  { title: 'Data Cards', desc: 'Modern card components', gradient: 'from-orange-500 to-red-500' }
+  { title: 'Dashboard UI', desc: 'Responsive analytics panel', gradient: 'from-blue-500 to-purple-500', icon: LayoutDashboard },
+  { title: 'Automation Flow', desc: 'Multi-step workflow', gradient: 'from-purple-500 to-pink-500', icon: Workflow },
+  { title: 'Data Cards', desc: 'Modern card components', gradient: 'from-orange-500 to-red-500', icon: Layers }
+];
+
+// Processing stages
+const processingStages = [
+  { label: 'Analyzing', icon: Gauge, color: 'text-blue-400' },
+  { label: 'Processing', icon: Cpu, color: 'text-purple-400' },
+  { label: 'Assembling', icon: Settings, color: 'text-orange-400' },
+  { label: 'Optimizing', icon: Sparkles, color: 'text-green-400' },
+  { label: 'Complete', icon: CheckCircle, color: 'text-emerald-400' }
+];
+
+// Service features
+const serviceFeatures = [
+  { title: 'AI-Powered Design', description: 'Intelligent component generation', icon: Wand2 },
+  { title: 'Real-time Collaboration', description: 'Team sync and feedback loops', icon: Users },
+  { title: 'Automated Testing', description: 'QA validation at every stage', icon: ShieldCheck },
+  { title: 'Instant Deployment', description: 'Production-ready output', icon: ZapIcon }
 ];
 
 const flowStages = [
@@ -131,51 +154,108 @@ const timeline = [
 const AssemblyDesign: React.FC = () => {
   const [currentInputIndex, setCurrentInputIndex] = useState(0);
   const [currentOutputIndex, setCurrentOutputIndex] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [flowingItems, setFlowingItems] = useState<Array<{ id: number; source: typeof inputSources[0]; position: number }>>([]);
+  const [itemIdCounter, setItemIdCounter] = useState(0);
+
+  // Animation controls
+  const gearControls = useAnimation();
 
   useEffect(() => {
-    const inputInterval = setInterval(() => {
-      setCurrentInputIndex((prev) => (prev + 1) % inputSources.length);
-      setIsProcessing(true);
-      setTimeout(() => setIsProcessing(false), 1000);
-    }, 2500);
+    // Continuous gear rotation
+    gearControls.start({
+      rotate: 360,
+      transition: {
+        duration: 4,
+        repeat: Infinity,
+        ease: "linear"
+      }
+    });
+  }, [gearControls]);
 
+  useEffect(() => {
+    // Pipeline flow system
+    const pipelineInterval = setInterval(() => {
+      // Add new item to pipeline
+      setFlowingItems(prev => [
+        ...prev,
+        {
+          id: itemIdCounter,
+          source: inputSources[currentInputIndex],
+          position: 0
+        }
+      ]);
+      setItemIdCounter(prev => prev + 1);
+      setCurrentInputIndex((prev) => (prev + 1) % inputSources.length);
+    }, 3000);
+
+    // Move items through pipeline
+    const flowInterval = setInterval(() => {
+      setFlowingItems(prev =>
+        prev
+          .map(item => ({ ...item, position: item.position + 1 }))
+          .filter(item => item.position < 6) // Remove completed items
+      );
+    }, 600);
+
+    // Cycle through processing stages
+    const stageInterval = setInterval(() => {
+      setCurrentStage((prev) => (prev + 1) % processingStages.length);
+    }, 1200);
+
+    // Cycle output cards
     const outputInterval = setInterval(() => {
       setCurrentOutputIndex((prev) => (prev + 1) % outputCards.length);
-    }, 2500);
+    }, 3000);
 
     return () => {
-      clearInterval(inputInterval);
+      clearInterval(pipelineInterval);
+      clearInterval(flowInterval);
+      clearInterval(stageInterval);
       clearInterval(outputInterval);
     };
-  }, []);
+  }, [currentInputIndex, itemIdCounter]);
 
   return (
     <div className="min-h-screen bg-background text-foreground pt-16">
-      {/* Hero Section - Transformation Machine */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <div className="absolute inset-0 bg-grid-slate-700/25 [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.6),transparent)]" />
+      {/* Hero Section - Mechanical Assembly Line */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+        {/* Animated grid background - theme aware */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_110%)] opacity-20" />
+        </div>
 
-        {/* Animated particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
+        {/* Floating geometric shapes */}
+        <div className="absolute inset-0 overflow-hidden opacity-30">
+          {[...Array(15)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-1 h-1 bg-blue-500/30 rounded-full"
-              initial={{
-                x: Math.random() * 100 + '%',
-                y: Math.random() * 100 + '%',
+              className="absolute"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
               }}
               animate={{
-                y: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
-                opacity: [0, 1, 0]
+                y: [0, -30, 0],
+                x: [0, Math.random() * 20 - 10, 0],
+                rotate: [0, 180, 360],
+                opacity: [0.1, 0.3, 0.1]
               }}
               transition={{
-                duration: Math.random() * 3 + 2,
+                duration: Math.random() * 10 + 10,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
+                delay: Math.random() * 5
               }}
-            />
+            >
+              {i % 3 === 0 ? (
+                <div className="w-8 h-8 border-2 border-primary/30 rounded-lg" />
+              ) : i % 3 === 1 ? (
+                <div className="w-6 h-6 bg-primary/20 rounded-full" />
+              ) : (
+                <div className="w-10 h-10 border-2 border-primary/20" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+              )}
+            </motion.div>
           ))}
         </div>
 
@@ -184,231 +264,234 @@ const AssemblyDesign: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
+            transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+            className="text-center mb-16"
           >
-            <Badge className="mb-6 text-sm bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20">
-              Automation Design Assembly
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-              Turn raw inputs into polished interfaces
-            </h1>
-            <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10">
-              Watch as your automation tools transform into production-ready UI components through our intelligent assembly line
-            </p>
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+            >
+              <Badge className="mb-6 text-sm bg-primary/10 border-primary/20">
+                <Package className="w-3 h-3 mr-1 inline" />
+                Automation Design Assembly
+              </Badge>
+            </motion.div>
+            <motion.h1
+              className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+            >
+              Watch Your Ideas Transform
+              <br />
+              <span className="text-primary">Into Production-Ready UI</span>
+            </motion.h1>
+            <motion.p
+              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              Experience the mechanical precision of our AI-powered assembly line turning automation sources into polished interfaces
+            </motion.p>
           </motion.div>
 
-          {/* Transformation Machine Visualization */}
-          <div className="relative max-w-6xl mx-auto mb-12">
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-8 md:gap-12 items-center">
+          {/* Mechanical Assembly Line Visualization */}
+          <div className="relative max-w-7xl mx-auto mb-16">
+            {/* Assembly Line Pipeline */}
+            <div className="relative bg-card/50 backdrop-blur-sm border border-border rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden">
+              {/* Conveyor Belt Base */}
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-r from-border via-primary/20 to-border" />
+              <div className="absolute bottom-0 left-0 right-0 h-1">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-transparent via-primary to-transparent"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
 
-              {/* INPUT SIDE */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex flex-col items-end space-y-4"
-              >
-                <div className="text-right mb-4">
-                  <h3 className="text-lg font-semibold text-white mb-1">Raw Inputs</h3>
-                  <p className="text-sm text-slate-400">Automation sources</p>
-                </div>
-
-                <div className="relative w-full max-w-xs">
-                  <AnimatePresence mode="wait">
-                    {inputSources.map((source, idx) => {
-                      if (idx !== currentInputIndex) return null;
-                      const Icon = source.icon;
-                      return (
-                        <motion.div
-                          key={source.label}
-                          initial={{ opacity: 0, scale: 0.8, x: -20 }}
-                          animate={{ opacity: 1, scale: 1, x: 0 }}
-                          exit={{ opacity: 0, scale: 0.8, x: 20 }}
-                          transition={{ duration: 0.5 }}
-                          className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-2xl"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-lg bg-slate-900/50 ${source.color}`}>
-                              <Icon className="w-8 h-8" />
-                            </div>
-                            <div>
-                              <div className="text-white font-semibold">{source.label}</div>
-                              <div className="text-xs text-slate-400">Integration source</div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-
-                  {/* Animated connection line */}
+              {/* Assembly Line Stages */}
+              <div className="grid grid-cols-5 gap-4 md:gap-6 mb-8">
+                {/* Input Stage */}
+                <div className="col-span-1 flex flex-col items-center">
                   <motion.div
-                    className="absolute top-1/2 -right-8 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-transparent"
-                    animate={{
-                      opacity: [0.3, 1, 0.3],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
+                    className="relative w-16 h-16 md:w-20 md:h-20 mb-3"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                  >
+                    <div className="absolute inset-0 bg-primary/10 rounded-2xl" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        animate={{ rotate: [0, 15, -15, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Package className="w-8 h-8 md:w-10 md:h-10 text-primary" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                  <div className="text-center">
+                    <div className="text-xs md:text-sm font-semibold text-foreground">Input</div>
+                    <div className="text-xs text-muted-foreground">Sources</div>
+                  </div>
                 </div>
 
-                {/* Input icon grid preview */}
-                <div className="grid grid-cols-3 gap-2 mt-6">
-                  {inputSources.map((source, idx) => {
-                    const Icon = source.icon;
+                {/* Processing Stages (3 stages) */}
+                {processingStages.slice(0, 3).map((stage, idx) => {
+                  const StageIcon = stage.icon;
+                  const isActive = currentStage === idx;
+                  return (
+                    <div key={idx} className="col-span-1 flex flex-col items-center">
+                      <motion.div
+                        className="relative w-16 h-16 md:w-20 md:h-20 mb-3"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, delay: 0.2 + idx * 0.1 }}
+                      >
+                        {/* Rotating gear background */}
+                        <motion.div
+                          className="absolute inset-0 flex items-center justify-center"
+                          animate={gearControls}
+                        >
+                          <Cog className={`w-full h-full ${isActive ? 'text-primary/30' : 'text-muted/30'}`} />
+                        </motion.div>
+
+                        {/* Stage icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <motion.div
+                            animate={{
+                              scale: isActive ? [1, 1.2, 1] : 1,
+                            }}
+                            transition={{ duration: 0.6, repeat: Infinity }}
+                          >
+                            <StageIcon className={`w-6 h-6 md:w-8 md:h-8 ${isActive ? stage.color : 'text-muted-foreground'}`} />
+                          </motion.div>
+                        </div>
+
+                        {/* Active indicator */}
+                        {isActive && (
+                          <motion.div
+                            className="absolute inset-0 rounded-full border-2 border-primary"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1.2, opacity: 0 }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                          />
+                        )}
+                      </motion.div>
+                      <div className="text-center">
+                        <div className={`text-xs md:text-sm font-semibold ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {stage.label}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Output Stage */}
+                <div className="col-span-1 flex flex-col items-center">
+                  <motion.div
+                    className="relative w-16 h-16 md:w-20 md:h-20 mb-3"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-primary" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                  <div className="text-center">
+                    <div className="text-xs md:text-sm font-semibold text-foreground">Output</div>
+                    <div className="text-xs text-muted-foreground">Ready UI</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Flowing Items Through Pipeline */}
+              <div className="relative h-16 mb-6">
+                <AnimatePresence>
+                  {flowingItems.map((item) => {
+                    const ItemIcon = item.source.icon;
+                    const xPosition = `${item.position * 20}%`;
+
                     return (
                       <motion.div
-                        key={idx}
-                        className={`p-2 rounded-lg border transition-all ${
-                          idx === currentInputIndex
-                            ? 'border-blue-500/50 bg-blue-500/10'
-                            : 'border-slate-700/30 bg-slate-800/20'
-                        }`}
-                        animate={{
-                          scale: idx === currentInputIndex ? 1.05 : 1,
-                        }}
+                        key={item.id}
+                        className={`absolute top-1/2 -translate-y-1/2 ${item.source.bgColor} ${item.source.borderColor} border rounded-lg p-2 shadow-lg`}
+                        initial={{ x: '-10%', opacity: 0, scale: 0.5 }}
+                        animate={{ x: xPosition, opacity: 1, scale: 1 }}
+                        exit={{ x: '110%', opacity: 0, scale: 0.5 }}
+                        transition={{ type: "spring", stiffness: 100, damping: 15 }}
                       >
-                        <Icon className={`w-4 h-4 ${source.color}`} />
+                        <ItemIcon className={`w-5 h-5 ${item.source.color}`} />
                       </motion.div>
                     );
                   })}
-                </div>
-              </motion.div>
+                </AnimatePresence>
+              </div>
 
-              {/* MACHINE / PROCESSOR */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="relative"
-              >
-                <div className="relative w-32 h-32 md:w-40 md:h-40">
-                  {/* Outer glow ring */}
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-xl"
-                    animate={{
-                      scale: isProcessing ? [1, 1.2, 1] : 1,
-                      opacity: isProcessing ? [0.5, 1, 0.5] : 0.3,
-                    }}
-                    transition={{ duration: 1 }}
-                  />
-
-                  {/* Main machine box */}
-                  <motion.div
-                    className="relative w-full h-full rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-slate-700 shadow-2xl flex items-center justify-center overflow-hidden"
-                    animate={{
-                      boxShadow: isProcessing
-                        ? ['0 0 20px rgba(59, 130, 246, 0.3)', '0 0 40px rgba(147, 51, 234, 0.5)', '0 0 20px rgba(59, 130, 246, 0.3)']
-                        : '0 0 20px rgba(59, 130, 246, 0.2)',
-                    }}
-                    transition={{ duration: 1 }}
-                  >
-                    {/* Scan lines effect */}
-                    <AnimatePresence>
-                      {isProcessing && (
+              {/* Input/Output Display */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Input Sources Grid */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <ArrowRight className="w-4 h-4 text-primary" />
+                    Integration Sources
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {inputSources.map((source, idx) => {
+                      const Icon = source.icon;
+                      return (
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
-                          initial={{ y: '-100%' }}
-                          animate={{ y: '100%' }}
-                          exit={{ y: '100%' }}
-                          transition={{ duration: 1, ease: "linear" }}
-                        />
-                      )}
-                    </AnimatePresence>
-
-                    {/* Machine icon */}
-                    <motion.div
-                      animate={{
-                        rotate: isProcessing ? 360 : 0,
-                      }}
-                      transition={{ duration: 1, ease: "easeInOut" }}
-                    >
-                      <Wand2 className="w-12 h-12 md:w-16 md:h-16 text-blue-400" />
-                    </motion.div>
-
-                    {/* Corner indicators */}
-                    {[...Array(4)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className={`absolute w-2 h-2 bg-blue-500 rounded-full ${
-                          i === 0 ? 'top-2 left-2' :
-                          i === 1 ? 'top-2 right-2' :
-                          i === 2 ? 'bottom-2 left-2' :
-                          'bottom-2 right-2'
-                        }`}
-                        animate={{
-                          opacity: isProcessing ? [0.3, 1, 0.3] : 0.5,
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          repeat: Infinity,
-                          delay: i * 0.2,
-                        }}
-                      />
-                    ))}
-                  </motion.div>
+                          key={idx}
+                          className={`p-3 rounded-lg border transition-all ${source.bgColor} ${source.borderColor}`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Icon className={`w-6 h-6 ${source.color} mx-auto mb-1`} />
+                          <div className="text-xs text-center text-muted-foreground">{source.label}</div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Label */}
-                <div className="text-center mt-4">
-                  <div className="text-sm font-semibold text-white">AI Assembly</div>
-                  <div className="text-xs text-slate-400">Processing...</div>
-                </div>
-              </motion.div>
-
-              {/* OUTPUT SIDE */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex flex-col items-start space-y-4"
-              >
-                <div className="text-left mb-4">
-                  <h3 className="text-lg font-semibold text-white mb-1">Polished Output</h3>
-                  <p className="text-sm text-slate-400">Production-ready UI</p>
-                </div>
-
-                <div className="relative w-full max-w-xs">
-                  {/* Animated connection line */}
-                  <motion.div
-                    className="absolute top-1/2 -left-8 w-8 h-0.5 bg-gradient-to-l from-purple-500 to-transparent"
-                    animate={{
-                      opacity: [0.3, 1, 0.3],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
-
+                {/* Output Cards Display */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Production Output
+                  </h3>
                   <AnimatePresence mode="wait">
                     {outputCards.map((card, idx) => {
                       if (idx !== currentOutputIndex) return null;
+                      const CardIcon = card.icon;
                       return (
                         <motion.div
                           key={card.title}
-                          initial={{ opacity: 0, scale: 0.8, x: 20 }}
-                          animate={{ opacity: 1, scale: 1, x: 0 }}
-                          exit={{ opacity: 0, scale: 0.8, x: -20 }}
-                          transition={{ duration: 0.5 }}
-                          className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-2xl overflow-hidden"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ type: "spring", stiffness: 200 }}
+                          className="bg-card border border-border rounded-lg p-4 shadow-lg"
                         >
-                          <div className={`h-2 w-full rounded-full bg-gradient-to-r ${card.gradient} mb-4`} />
-                          <div>
-                            <div className="text-white font-semibold mb-2">{card.title}</div>
-                            <div className="text-sm text-slate-400 mb-4">{card.desc}</div>
-                            <div className="flex gap-2">
-                              <div className="w-full h-2 bg-slate-700 rounded" />
-                              <div className="w-3/4 h-2 bg-slate-700 rounded" />
+                          <div className={`h-1 w-full rounded-full bg-gradient-to-r ${card.gradient} mb-3`} />
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg bg-gradient-to-br ${card.gradient} bg-opacity-10`}>
+                              <CardIcon className="w-5 h-5 text-primary" />
                             </div>
-                            <div className="flex gap-2 mt-2">
-                              <div className="w-1/2 h-2 bg-slate-700 rounded" />
-                              <div className="w-full h-2 bg-slate-700 rounded" />
+                            <div className="flex-1">
+                              <div className="font-semibold text-foreground mb-1">{card.title}</div>
+                              <div className="text-xs text-muted-foreground">{card.desc}</div>
                             </div>
                           </div>
                         </motion.div>
@@ -416,41 +499,62 @@ const AssemblyDesign: React.FC = () => {
                     })}
                   </AnimatePresence>
                 </div>
-
-                {/* Output preview badges */}
-                <div className="flex flex-wrap gap-2 mt-6">
-                  {outputCards.map((card, idx) => (
-                    <motion.div
-                      key={idx}
-                      className={`px-3 py-1 rounded-full text-xs border transition-all ${
-                        idx === currentOutputIndex
-                          ? 'border-purple-500/50 bg-purple-500/10 text-purple-300'
-                          : 'border-slate-700/30 bg-slate-800/20 text-slate-400'
-                      }`}
-                      animate={{
-                        scale: idx === currentOutputIndex ? 1.05 : 1,
-                      }}
-                    >
-                      {card.title}
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
+              </div>
             </div>
           </div>
+
+          {/* Service Features Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="grid md:grid-cols-4 gap-4 mb-12"
+          >
+            {serviceFeatures.map((feature, idx) => {
+              const FeatureIcon = feature.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  className="group"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 + idx * 0.1, type: "spring" }}
+                  whileHover={{ y: -5 }}
+                >
+                  <Card className="h-full border-border/50 hover:border-primary/50 transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <FeatureIcon className="w-6 h-6 text-primary" />
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
+                      <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 0.9, type: "spring" }}
             className="flex flex-col sm:flex-row justify-center gap-4"
           >
-            <Button size="lg" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              <Sparkles className="w-4 h-4" />
+            <Button size="lg" className="gap-2 group">
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <Sparkles className="w-5 h-5" />
+              </motion.div>
               Start the Assembly
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" className="gap-2 border-slate-700 hover:bg-slate-800">
+            <Button size="lg" variant="outline" className="gap-2">
               <Users className="w-4 h-4" />
               Book a Workshop
             </Button>
