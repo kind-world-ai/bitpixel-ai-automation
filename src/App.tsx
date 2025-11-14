@@ -12,6 +12,7 @@ import AutomationScorecard from './pages/AutomationScorecard';
 import AssemblyDesign from './pages/AssemblyDesign';
 import AIAgentLanding from './pages/AIAgentLanding';
 import BitPixelGICascade from './pages/BitPixelGICascade';
+import ParticleGridExperience from './pages/ParticleGridExperience';
 import ThemeDemo from './components/ThemeDemo';
 import './App.css';
 
@@ -20,6 +21,9 @@ function App() {
     <Router>
       <ScrollToTop />
       <Routes>
+        {/* Immersive full-screen experience - outside Layout */}
+        <Route path="particle-grid" element={<ParticleGridExperience />} />
+
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
