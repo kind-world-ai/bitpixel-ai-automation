@@ -7,7 +7,7 @@ interface DigitalDataFlowShaderProps {
   scrollY?: number;
 }
 
-// Shader that visualizes flowing binary/hex data streams
+// IMPROVED: More subtle, natural lighting with reduced brightness
 const dataFlowVertexShader = `
   varying vec2 vUv;
   varying vec3 vPosition;
@@ -28,163 +28,94 @@ const dataFlowFragmentShader = `
   varying vec2 vUv;
   varying vec3 vPosition;
 
-  // BitPixel brand colors
-  const vec3 colorBitBlue = vec3(0.0, 0.83, 1.0);      // #00D4FF
-  const vec3 colorPixelCyan = vec3(0.0, 1.0, 1.0);     // #00FFFF
-  const vec3 colorPurple = vec3(0.66, 0.55, 0.98);     // #A78BFA
-  const vec3 colorMagenta = vec3(0.93, 0.19, 0.44);    // #EC4899
-  const vec3 colorDeepBlue = vec3(0.02, 0.05, 0.11);   // #050711
-  const vec3 colorDarkBlue = vec3(0.04, 0.09, 0.16);   // #0A0E1A
+  // BitPixel brand colors - toned down
+  const vec3 colorBitBlue = vec3(0.0, 0.5, 0.6);        // Darker blue
+  const vec3 colorPixelCyan = vec3(0.0, 0.6, 0.7);      // Darker cyan
+  const vec3 colorPurple = vec3(0.4, 0.3, 0.6);         // Darker purple
+  const vec3 colorMagenta = vec3(0.5, 0.1, 0.3);        // Darker magenta
+  const vec3 colorDeepBlue = vec3(0.01, 0.02, 0.04);    // Very dark
+  const vec3 colorDarkBlue = vec3(0.02, 0.04, 0.08);    // Dark
 
-  // Hash function for pseudo-random values
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
   }
 
-  // Smooth noise
   float noise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
     f = f * f * (3.0 - 2.0 * f);
-
     float a = hash(i);
     float b = hash(i + vec2(1.0, 0.0));
     float c = hash(i + vec2(0.0, 1.0));
     float d = hash(i + vec2(1.0, 1.0));
-
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
 
-  // Fractal Brownian Motion
   float fbm(vec2 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    float frequency = 1.0;
-
-    for(int i = 0; i < 5; i++) {
-      value += amplitude * noise(p * frequency);
-      frequency *= 2.0;
+    for(int i = 0; i < 3; i++) {
+      value += amplitude * noise(p);
+      p *= 2.0;
       amplitude *= 0.5;
     }
-
     return value;
   }
 
-  // Generate binary/hex character effect
-  float binaryStream(vec2 uv, float offset) {
-    vec2 gridUv = uv * vec2(60.0, 40.0);
+  // Subtle data streams
+  float dataStream(vec2 uv, float offset) {
+    vec2 gridUv = uv * vec2(40.0, 30.0);
     vec2 cellId = floor(gridUv);
     vec2 cellUv = fract(gridUv);
 
     float randomVal = hash(cellId + offset);
-    float flowSpeed = time * (0.8 + randomVal * 0.4) + scrollY * 0.5;
-    float streamPos = fract(cellId.y * 0.1 - flowSpeed);
+    float flowSpeed = time * 0.4 + scrollY * 0.3;
+    float streamPos = fract(cellId.y * 0.15 - flowSpeed + randomVal);
 
-    // Create vertical streams
-    float stream = smoothstep(0.9, 1.0, streamPos);
-    stream += smoothstep(0.0, 0.1, streamPos) * 0.3;
+    // Sparse streams
+    if(randomVal < 0.85) return 0.0;
 
-    // Add character-like blocks
-    float charBlock = step(0.3, cellUv.x) * step(cellUv.x, 0.7) *
-                      step(0.2, cellUv.y) * step(cellUv.y, 0.8);
+    float stream = smoothstep(0.95, 1.0, streamPos);
+    stream += smoothstep(0.0, 0.05, streamPos) * 0.2;
 
-    return stream * charBlock * randomVal;
+    float charBlock = step(0.4, cellUv.x) * step(cellUv.x, 0.6) *
+                      step(0.3, cellUv.y) * step(cellUv.y, 0.7);
+
+    return stream * charBlock * 0.3;
   }
 
-  // Create hexagonal grid pattern
-  float hexPattern(vec2 uv) {
-    vec2 p = uv * 20.0;
-    vec2 h = vec2(1.0, 1.732);
-    vec2 a = mod(p, h) - h * 0.5;
-    vec2 b = mod(p - h * 0.5, h) - h * 0.5;
-
-    float d = min(dot(a, a), dot(b, b));
-    return smoothstep(0.08, 0.05, d);
+  // Very subtle grid
+  float subtleGrid(vec2 uv) {
+    vec2 grid = abs(fract(uv * 30.0) - 0.5);
+    float line = min(grid.x, grid.y);
+    return smoothstep(0.02, 0.0, line) * 0.05;
   }
 
-  // Flowing data streams
-  vec3 dataStreams(vec2 uv) {
+  // Minimal neural network
+  vec3 subtleNeural(vec2 uv) {
     vec3 color = vec3(0.0);
 
-    // Multiple layers of binary streams
-    for(float i = 0.0; i < 3.0; i++) {
-      float stream = binaryStream(uv + vec2(i * 0.1, 0.0), i * 100.0);
-
-      // Color variation per stream
-      vec3 streamColor = mix(
-        mix(colorBitBlue, colorPixelCyan, i / 3.0),
-        mix(colorPurple, colorMagenta, i / 3.0),
-        sin(time * 0.5 + i) * 0.5 + 0.5
-      );
-
-      color += stream * streamColor * (0.4 + i * 0.2);
-    }
-
-    return color;
-  }
-
-  // Pixel bit pattern
-  vec3 pixelBits(vec2 uv) {
-    // Create animated pixel grid
-    vec2 pixelUv = uv * 100.0;
-    vec2 pixelId = floor(pixelUv);
-
-    float pixelHash = hash(pixelId);
-    float pixelActive = step(0.7, fract(pixelHash * 100.0 + time * 0.3));
-
-    // Pulsing pixels
-    float pulse = sin(time * 2.0 + pixelHash * 10.0) * 0.5 + 0.5;
-
-    vec3 pixelColor = mix(colorBitBlue, colorPurple, pixelHash);
-    return pixelColor * pixelActive * pulse * 0.2;
-  }
-
-  // Mouse interaction glow
-  vec3 mouseGlow(vec2 uv) {
-    vec2 mouseUv = mouse * 0.5 + 0.5;
-    float aspect = resolution.x / resolution.y;
-
-    vec2 correctedUv = vec2(uv.x * aspect, uv.y);
-    vec2 correctedMouse = vec2(mouseUv.x * aspect, mouseUv.y);
-
-    float dist = length(correctedUv - correctedMouse);
-
-    // Ripple effect
-    float ripple = sin(dist * 20.0 - time * 5.0) * 0.5 + 0.5;
-    ripple *= smoothstep(0.6, 0.0, dist);
-
-    // Radial glow
-    float glow = smoothstep(0.5, 0.0, dist);
-
-    vec3 glowColor = mix(colorPixelCyan, colorMagenta, sin(time * 0.5) * 0.5 + 0.5);
-
-    return glowColor * (glow * 0.3 + ripple * 0.5);
-  }
-
-  // Neural network nodes
-  vec3 neuralNodes(vec2 uv) {
-    vec3 color = vec3(0.0);
-
-    for(float i = 0.0; i < 8.0; i++) {
+    // Only 4 nodes instead of 8
+    for(float i = 0.0; i < 4.0; i++) {
       vec2 nodePos = vec2(
-        0.5 + sin(time * 0.3 + i * 0.8) * 0.4,
-        0.5 + cos(time * 0.4 + i * 0.6) * 0.4
+        0.5 + sin(time * 0.2 + i * 1.5) * 0.35,
+        0.5 + cos(time * 0.25 + i * 1.2) * 0.35
       );
 
       float dist = length(uv - nodePos);
 
-      // Node glow
-      float node = smoothstep(0.05, 0.0, dist);
-      float halo = smoothstep(0.15, 0.05, dist) * 0.3;
+      // Very small, subtle nodes
+      float node = smoothstep(0.015, 0.0, dist);
+      float halo = smoothstep(0.06, 0.015, dist) * 0.1;
 
-      vec3 nodeColor = mix(colorBitBlue, colorPurple, i / 8.0);
-      color += (node + halo) * nodeColor;
+      vec3 nodeColor = mix(colorBitBlue, colorPurple, i / 4.0);
+      color += (node + halo) * nodeColor * 0.4;
 
-      // Connecting lines
-      for(float j = i + 1.0; j < 8.0; j++) {
+      // Minimal connecting lines
+      for(float j = i + 1.0; j < 4.0; j++) {
         vec2 otherPos = vec2(
-          0.5 + sin(time * 0.3 + j * 0.8) * 0.4,
-          0.5 + cos(time * 0.4 + j * 0.6) * 0.4
+          0.5 + sin(time * 0.2 + j * 1.5) * 0.35,
+          0.5 + cos(time * 0.25 + j * 1.2) * 0.35
         );
 
         vec2 lineDir = normalize(otherPos - nodePos);
@@ -193,14 +124,55 @@ const dataFlowFragmentShader = `
         vec2 closest = nodePos + lineDir * proj * length(otherPos - nodePos);
 
         float lineDist = length(uv - closest);
-        float line = smoothstep(0.002, 0.0, lineDist);
+        float line = smoothstep(0.001, 0.0, lineDist);
 
-        // Data packets flowing along lines
-        float packetPos = fract(time * 0.5 + i * 0.1);
-        float packet = smoothstep(0.05, 0.0, abs(proj - packetPos));
+        // Subtle data packet
+        float packetPos = fract(time * 0.3 + i * 0.2);
+        float packet = smoothstep(0.03, 0.0, abs(proj - packetPos));
 
-        color += (line * 0.1 + packet * 0.5) * mix(colorPixelCyan, colorMagenta, proj);
+        color += (line * 0.03 + packet * 0.15) * mix(colorBitBlue, colorPurple, proj);
       }
+    }
+
+    return color;
+  }
+
+  // Gentle mouse interaction
+  vec3 gentleMouseEffect(vec2 uv) {
+    vec2 mouseUv = mouse * 0.5 + 0.5;
+    float aspect = resolution.x / resolution.y;
+    vec2 correctedUv = vec2(uv.x * aspect, uv.y);
+    vec2 correctedMouse = vec2(mouseUv.x * aspect, mouseUv.y);
+    float dist = length(correctedUv - correctedMouse);
+
+    // Very subtle ripple
+    float ripple = sin(dist * 15.0 - time * 3.0) * 0.5 + 0.5;
+    ripple *= smoothstep(0.4, 0.0, dist) * 0.15;
+
+    // Soft glow
+    float glow = smoothstep(0.3, 0.0, dist) * 0.1;
+
+    vec3 glowColor = mix(colorBitBlue, colorPurple, 0.5);
+    return glowColor * (glow + ripple);
+  }
+
+  // Floating particles
+  vec3 floatingParticles(vec2 uv) {
+    vec3 color = vec3(0.0);
+
+    for(float i = 0.0; i < 15.0; i++) {
+      vec2 particlePos = vec2(
+        fract(i * 0.618 + time * 0.05),
+        fract(i * 0.314 + time * 0.08 + sin(i))
+      );
+
+      float dist = length(uv - particlePos);
+      float particle = smoothstep(0.008, 0.0, dist);
+
+      vec3 particleColor = mix(colorBitBlue, colorPixelCyan, fract(i * 0.5));
+      float twinkle = sin(time * 2.0 + i * 3.0) * 0.5 + 0.5;
+
+      color += particle * particleColor * twinkle * 0.2;
     }
 
     return color;
@@ -209,44 +181,47 @@ const dataFlowFragmentShader = `
   void main() {
     vec2 uv = vUv;
 
-    // Base gradient background
-    vec3 bgGradient = mix(colorDeepBlue, colorDarkBlue, uv.y);
+    // Darker background with subtle gradient
+    vec3 bg = mix(colorDeepBlue, colorDarkBlue, uv.y * 0.5);
 
-    // Add subtle noise to background
-    float bgNoise = fbm(uv * 3.0 + time * 0.05) * 0.05;
-    bgGradient += bgNoise;
+    // Very subtle noise
+    float bgNoise = fbm(uv * 2.0 + time * 0.03) * 0.02;
+    bg += bgNoise;
 
-    // Layer 1: Data streams (binary/hex flowing)
-    vec3 streams = dataStreams(uv);
+    // Subtle data streams
+    vec3 streams = vec3(0.0);
+    for(float i = 0.0; i < 2.0; i++) {
+      float stream = dataStream(uv + vec2(i * 0.2, 0.0), i * 50.0);
+      vec3 streamColor = mix(colorBitBlue, colorPixelCyan, i / 2.0);
+      streams += stream * streamColor * 0.3;
+    }
 
-    // Layer 2: Pixel bits
-    vec3 pixels = pixelBits(uv);
+    // Minimal grid
+    float grid = subtleGrid(uv);
+    vec3 gridColor = colorBitBlue * grid;
 
-    // Layer 3: Hexagonal pattern overlay
-    float hexGrid = hexPattern(uv + vec2(time * 0.02, 0.0));
-    vec3 hexColor = colorBitBlue * hexGrid * 0.15;
+    // Subtle neural network
+    vec3 neural = subtleNeural(uv);
 
-    // Layer 4: Neural network
-    vec3 neural = neuralNodes(uv);
+    // Floating particles
+    vec3 particles = floatingParticles(uv);
 
-    // Layer 5: Mouse interaction
-    vec3 mouseEffect = mouseGlow(uv);
+    // Gentle mouse effect
+    vec3 mouseEffect = gentleMouseEffect(uv);
 
-    // Combine all layers
-    vec3 finalColor = bgGradient;
-    finalColor += streams;
-    finalColor += pixels;
-    finalColor += hexColor;
-    finalColor += neural * 0.4;
+    // Combine all layers with reduced intensity
+    vec3 finalColor = bg;
+    finalColor += streams * 0.6;
+    finalColor += gridColor;
+    finalColor += neural * 0.5;
+    finalColor += particles;
     finalColor += mouseEffect;
 
-    // Add subtle vignette
-    float vignette = smoothstep(1.2, 0.3, length(uv - 0.5));
-    finalColor *= vignette * 0.7 + 0.3;
+    // Subtle vignette
+    float vignette = smoothstep(1.0, 0.4, length(uv - 0.5));
+    finalColor *= vignette * 0.8 + 0.2;
 
-    // Add glow in areas of high intensity
-    float intensity = dot(finalColor, vec3(0.299, 0.587, 0.114));
-    finalColor += finalColor * pow(intensity, 3.0) * 0.5;
+    // NO BLOOM - removed the bright glow effect
 
     gl_FragColor = vec4(finalColor, 1.0);
   }

@@ -3,9 +3,9 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { DigitalDataFlowShader } from './DigitalDataFlowShader';
 import { BinaryRainShader } from './BinaryRainShader';
-import { PixelWaveShader } from './PixelWaveShader';
+import { AutomationFlowShader } from './AutomationFlowShader';
 
-export type ShaderType = 'dataflow' | 'binaryrain' | 'pixelwave';
+export type ShaderType = 'dataflow' | 'binaryrain' | 'automationflow';
 
 interface BitPixelShaderBackgroundProps {
   shaderType?: ShaderType;
@@ -103,8 +103,8 @@ export function BitPixelShaderBackground({
         {shaderType === 'binaryrain' && (
           <BinaryRainShader mouse={mouse} scrollY={scrollY} />
         )}
-        {shaderType === 'pixelwave' && (
-          <PixelWaveShader mouse={mouse} scrollY={scrollY} />
+        {shaderType === 'automationflow' && (
+          <AutomationFlowShader mouse={mouse} scrollY={scrollY} />
         )}
 
         {/* Controller */}

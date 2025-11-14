@@ -14,15 +14,15 @@ const ShaderBackgroundDemo: React.FC = () => {
     {
       type: 'dataflow',
       name: 'Digital Data Flow',
-      description: 'Neural networks, binary streams, and flowing hexadecimal data',
+      description: 'Subtle data streams with minimal neural network visualization',
       icon: Cpu,
       features: [
-        'Flowing binary/hex streams',
-        'Animated neural network nodes',
-        'Hexagonal grid patterns',
-        'Pixel bit effects',
-        'Mouse interaction ripples',
-        'Global illumination aesthetics',
+        'Sparse flowing data streams',
+        'Minimal 4-node neural network',
+        'Subtle background grid',
+        'Floating particles',
+        'Gentle mouse interaction',
+        'Natural, non-bright lighting',
       ],
     },
     {
@@ -40,17 +40,17 @@ const ShaderBackgroundDemo: React.FC = () => {
       ],
     },
     {
-      type: 'pixelwave',
-      name: 'Pixel Wave',
-      description: 'Animated pixel grid with wave deformations and circuit patterns',
+      type: 'automationflow',
+      name: 'Automation Pipeline',
+      description: 'Visualizes data processing through automation stages - meaningful workflow representation',
       icon: Waves,
       features: [
-        'RGB sub-pixel rendering',
-        'Wave-based pixel activation',
-        'Circuit board patterns',
-        'Flowing data packets',
-        'Glitch effects',
-        'Dynamic color gradients',
+        'Input → Processing → Output flow',
+        'Three processing stages with progress indicators',
+        'Animated data particles along paths',
+        'Success/completion visualization',
+        'Real automation pipeline metaphor',
+        'Shows BitPixel core business value',
       ],
     },
   ];
@@ -248,16 +248,16 @@ const ShaderBackgroundDemo: React.FC = () => {
                         </span>
                       </>
                     )}
-                    {selectedShader === 'pixelwave' && (
+                    {selectedShader === 'automationflow' && (
                       <>
-                        <span className="px-3 py-1 text-xs rounded-full bg-pink-400/20 text-pink-300 border border-pink-400/30">
-                          Creative Agencies
+                        <span className="px-3 py-1 text-xs rounded-full bg-green-400/20 text-green-300 border border-green-400/30">
+                          Automation Services
                         </span>
-                        <span className="px-3 py-1 text-xs rounded-full bg-purple-400/20 text-purple-300 border border-purple-400/30">
-                          Digital Art
+                        <span className="px-3 py-1 text-xs rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
+                          AI Agents
                         </span>
                         <span className="px-3 py-1 text-xs rounded-full bg-blue-400/20 text-blue-300 border border-blue-400/30">
-                          Gaming
+                          Workflow Platforms
                         </span>
                       </>
                     )}
