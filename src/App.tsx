@@ -14,6 +14,8 @@ import AIAgentLanding from './pages/AIAgentLanding';
 import BitPixelGICascade from './pages/BitPixelGICascade';
 import ParticleGridExperience from './pages/ParticleGridExperience';
 import ShaderBackgroundDemo from './pages/ShaderBackgroundDemo';
+import NextGenInteractive from './pages/NextGenInteractive';
+import LightPhysicsEducation from './pages/LightPhysicsEducation';
 import ThemeDemo from './components/ThemeDemo';
 import './App.css';
 
@@ -25,6 +27,8 @@ function App() {
         {/* Immersive full-screen experiences - outside Layout */}
         <Route path="particle-grid" element={<ParticleGridExperience />} />
         <Route path="shader-backgrounds" element={<ShaderBackgroundDemo />} />
+        <Route path="next-gen" element={<NextGenInteractive />} />
+        <Route path="light-physics" element={<LightPhysicsEducation />} />
 
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
