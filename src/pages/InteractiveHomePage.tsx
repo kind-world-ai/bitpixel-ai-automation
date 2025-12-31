@@ -1,0 +1,340 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
+
+// Placeholder AI Agent images - replace with actual image paths
+const PRIMARY_IMAGE = 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80';
+const REVEAL_IMAGE = 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1920&h=1080&fit=crop&q=80';
+
+interface BlobTrail {
+  id: number;
+  x: number;
+  y: number;
+  opacity: number;
+  size: number;
+}
+
+const InteractiveHomePage: React.FC = () => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [blobPos, setBlobPos] = useState({ x: 0, y: 0 });
+  const [blobTrails, setBlobTrails] = useState<BlobTrail[]>([]);
+  const [invertedElements, setInvertedElements] = useState<Set<string>>(new Set());
+  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+
+  const trailIdRef = useRef(0);
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const lastTrailTimeRef = useRef(0);
+  const animationFrameRef = useRef<number>();
+
+  const companyNameRef = useRef<HTMLDivElement>(null);
+  const portfolioLinkRef = useRef<HTMLAnchorElement>(null);
+  const socialIconsRef = useRef<HTMLDivElement>(null);
+
+  // Smooth blob following with lag
+  useEffect(() => {
+    const lerp = (start: number, end: number, factor: number) => {
+      return start + (end - start) * factor;
+    };
+
+    const animate = () => {
+      setBlobPos(prev => ({
+        x: lerp(prev.x, mousePos.x, 0.1),
+        y: lerp(prev.y, mousePos.y, 0.1)
+      }));
+
+      // Update parallax
+      const parallaxFactor = 0.02;
+      setParallaxOffset({
+        x: -(mousePos.x - window.innerWidth / 2) * parallaxFactor,
+        y: -(mousePos.y - window.innerHeight / 2) * parallaxFactor
+      });
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [mousePos]);
+
+  // Mouse move handler with trail creation
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const newMousePos = { x: e.clientX, y: e.clientY };
+    setMousePos(newMousePos);
+
+    // Calculate mouse speed
+    const dx = newMousePos.x - lastMousePosRef.current.x;
+    const dy = newMousePos.y - lastMousePosRef.current.y;
+    const speed = Math.sqrt(dx * dx + dy * dy);
+
+    // Create trail based on speed (throttled)
+    const now = Date.now();
+    if (now - lastTrailTimeRef.current > 30 && speed > 2) {
+      const trailSize = Math.min(120 + speed * 2, 200);
+      const newTrail: BlobTrail = {
+        id: trailIdRef.current++,
+        x: newMousePos.x,
+        y: newMousePos.y,
+        opacity: Math.min(speed / 50, 0.6),
+        size: trailSize
+      };
+
+      setBlobTrails(prev => [...prev.slice(-8), newTrail]);
+      lastTrailTimeRef.current = now;
+    }
+
+    lastMousePosRef.current = newMousePos;
+
+    // Check if blob is over text elements
+    checkBlobIntersection(newMousePos);
+  }, []);
+
+  // Check if blob intersects with text elements
+  const checkBlobIntersection = (pos: { x: number; y: number }) => {
+    const blobRadius = 150;
+    const newInvertedElements = new Set<string>();
+
+    const checkElement = (element: HTMLElement | null, id: string) => {
+      if (!element) return;
+      const rect = element.getBoundingClientRect();
+      const elementCenterX = rect.left + rect.width / 2;
+      const elementCenterY = rect.top + rect.height / 2;
+      const distance = Math.sqrt(
+        Math.pow(pos.x - elementCenterX, 2) + Math.pow(pos.y - elementCenterY, 2)
+      );
+
+      if (distance < blobRadius + Math.max(rect.width, rect.height) / 2) {
+        newInvertedElements.add(id);
+      }
+    };
+
+    checkElement(companyNameRef.current, 'company-name');
+    checkElement(portfolioLinkRef.current, 'portfolio-link');
+    checkElement(socialIconsRef.current, 'social-icons');
+
+    setInvertedElements(newInvertedElements);
+  };
+
+  // Fade out trails
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBlobTrails(prev =>
+        prev
+          .map(trail => ({ ...trail, opacity: trail.opacity * 0.9 }))
+          .filter(trail => trail.opacity > 0.05)
+      );
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-white cursor-none">
+      {/* Primary Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${PRIMARY_IMAGE})`,
+          transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
+          transition: 'transform 0.1s ease-out'
+        }}
+      />
+
+      {/* Animated Wave Lines Background */}
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none opacity-30"
+        style={{
+          transform: `translate(${parallaxOffset.x * 0.5}px, ${parallaxOffset.y * 0.5}px)`
+        }}
+      >
+        <defs>
+          <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#00D9FF" stopOpacity="0.3" />
+          </linearGradient>
+        </defs>
+
+        {[0, 1, 2, 3, 4].map((i) => (
+          <path
+            key={i}
+            d={`M 0 ${200 + i * 150} Q ${500 + mousePos.x * 0.05} ${150 + i * 150 + mousePos.y * 0.03}, ${1000} ${200 + i * 150} T ${2000} ${200 + i * 150}`}
+            fill="none"
+            stroke="url(#wave-gradient)"
+            strokeWidth="2"
+            opacity={0.6 - i * 0.1}
+          >
+            <animate
+              attributeName="d"
+              dur={`${15 + i * 2}s`}
+              repeatCount="indefinite"
+              values={`
+                M 0 ${200 + i * 150} Q ${500} ${150 + i * 150}, ${1000} ${200 + i * 150} T ${2000} ${200 + i * 150};
+                M 0 ${200 + i * 150} Q ${500} ${250 + i * 150}, ${1000} ${200 + i * 150} T ${2000} ${200 + i * 150};
+                M 0 ${200 + i * 150} Q ${500} ${150 + i * 150}, ${1000} ${200 + i * 150} T ${2000} ${200 + i * 150}
+              `}
+            />
+          </path>
+        ))}
+      </svg>
+
+      {/* Blob Reveal Mask */}
+      <div className="absolute inset-0 pointer-events-none">
+        <svg width="100%" height="100%" className="absolute inset-0">
+          <defs>
+            <filter id="goo">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+              <feColorMatrix
+                in="blur"
+                mode="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+                result="goo"
+              />
+              <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+
+            <mask id="blob-mask">
+              <rect width="100%" height="100%" fill="black" />
+
+              {/* Main blob */}
+              <circle
+                cx={blobPos.x}
+                cy={blobPos.y}
+                r="150"
+                fill="white"
+                filter="url(#goo)"
+              />
+
+              {/* Trail blobs */}
+              {blobTrails.map(trail => (
+                <circle
+                  key={trail.id}
+                  cx={trail.x}
+                  cy={trail.y}
+                  r={trail.size}
+                  fill="white"
+                  opacity={trail.opacity}
+                  filter="url(#goo)"
+                />
+              ))}
+            </mask>
+          </defs>
+        </svg>
+
+        {/* Reveal Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${REVEAL_IMAGE})`,
+            maskImage: 'url(#blob-mask)',
+            WebkitMaskImage: 'url(#blob-mask)',
+            transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
+            transition: 'transform 0.1s ease-out'
+          }}
+        />
+
+        {/* SVG mask overlay for browser compatibility */}
+        <svg width="100%" height="100%" className="absolute inset-0">
+          <image
+            href={REVEAL_IMAGE}
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMid slice"
+            mask="url(#blob-mask)"
+          />
+        </svg>
+      </div>
+
+      {/* Company Name - Top Left */}
+      <div
+        ref={companyNameRef}
+        className="absolute top-12 left-12 z-20 transition-colors duration-300"
+        style={{
+          color: invertedElements.has('company-name') ? 'white' : 'black',
+          fontFamily: "'Playfair Display', serif",
+          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`
+        }}
+      >
+        <div className="text-6xl font-bold leading-tight">
+          <div>BitPixel</div>
+          <div>Coders</div>
+        </div>
+      </div>
+
+      {/* Portfolio Link - Top Right */}
+      <a
+        ref={portfolioLinkRef}
+        href="/services"
+        className="absolute top-12 right-12 z-20 text-2xl font-light transition-colors duration-300 hover:opacity-70"
+        style={{
+          color: invertedElements.has('portfolio-link') ? 'white' : 'black',
+          fontFamily: "'Poppins', sans-serif",
+          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`
+        }}
+      >
+        Portfolio
+      </a>
+
+      {/* Social Media Icons - Bottom Right */}
+      <div
+        ref={socialIconsRef}
+        className="absolute bottom-12 right-12 z-20 flex gap-6"
+        style={{
+          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`
+        }}
+      >
+        {[
+          { Icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
+          { Icon: Twitter, href: 'https://twitter.com', label: 'Twitter/X' },
+          { Icon: Youtube, href: 'https://youtube.com', label: 'YouTube' },
+          { Icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' }
+        ].map(({ Icon, href, label }) => (
+          <a
+            key={label}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-all duration-300 hover:scale-110"
+            aria-label={label}
+            style={{
+              color: invertedElements.has('social-icons') ? 'white' : 'black'
+            }}
+          >
+            <Icon size={28} fill="currentColor" strokeWidth={0} />
+          </a>
+        ))}
+      </div>
+
+      {/* Custom Cursor - Main Blob */}
+      <div
+        className="fixed pointer-events-none z-50 mix-blend-difference"
+        style={{
+          left: blobPos.x,
+          top: blobPos.y,
+          transform: 'translate(-50%, -50%)',
+        }}
+      >
+        <div
+          className="w-8 h-8 rounded-full border-2 border-white"
+          style={{
+            boxShadow: '0 0 20px rgba(255, 255, 255, 0.5)'
+          }}
+        />
+      </div>
+
+      {/* Load Playfair Display font */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');
+      `}</style>
+    </div>
+  );
+};
+
+export default InteractiveHomePage;
