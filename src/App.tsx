@@ -24,12 +24,12 @@ function App() {
       <ScrollToTop />
       <Routes>
         {/* Immersive full-screen experiences - outside Layout */}
-        <Route path="/" element={<InteractiveHomePage />} />
+        <Route path="/interactive" element={<InteractiveHomePage />} />
         <Route path="particle-grid" element={<ParticleGridExperience />} />
         <Route path="shader-backgrounds" element={<ShaderBackgroundDemo />} />
 
         <Route path="/" element={<Layout />}>
-          <Route path="home-classic" element={<Home />} />
+          <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
           <Route path="case-studies" element={<CaseStudies />} />
           <Route path="contact" element={<Contact />} />

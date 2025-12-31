@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 
-// Placeholder AI Agent images - replace with actual image paths
-const PRIMARY_IMAGE = 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80';
-const REVEAL_IMAGE = 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1920&h=1080&fit=crop&q=80';
+// AI Agent image - using the same image for both primary and reveal
+const AI_AGENT_IMAGE = 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80';
 
 interface BlobTrail {
   id: number;
@@ -142,7 +141,7 @@ const InteractiveHomePage: React.FC = () => {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${PRIMARY_IMAGE})`,
+          backgroundImage: `url(${AI_AGENT_IMAGE})`,
           transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
           transition: 'transform 0.1s ease-out'
         }}
@@ -232,7 +231,7 @@ const InteractiveHomePage: React.FC = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url(${REVEAL_IMAGE})`,
+            backgroundImage: `url(${AI_AGENT_IMAGE})`,
             maskImage: 'url(#blob-mask)',
             WebkitMaskImage: 'url(#blob-mask)',
             transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
@@ -243,7 +242,7 @@ const InteractiveHomePage: React.FC = () => {
         {/* SVG mask overlay for browser compatibility */}
         <svg width="100%" height="100%" className="absolute inset-0">
           <image
-            href={REVEAL_IMAGE}
+            href={AI_AGENT_IMAGE}
             width="100%"
             height="100%"
             preserveAspectRatio="xMidYMid slice"
