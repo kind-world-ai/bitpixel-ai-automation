@@ -23,7 +23,7 @@ const InteractiveHomePage: React.FC = () => {
   const trailIdRef = useRef(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const lastTrailTimeRef = useRef(0);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   const companyNameRef = useRef<HTMLDivElement>(null);
   const portfolioLinkRef = useRef<HTMLAnchorElement>(null);
