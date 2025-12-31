@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 
-// AI Agent image - using the same image for both primary and reveal
-const AI_AGENT_IMAGE = 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80';
+// AI Agent/Tech themed images
+const PRIMARY_IMAGE = 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1920&h=1080&fit=crop&q=80'; // AI/Tech workspace
+const REVEAL_IMAGE = 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1920&h=1080&fit=crop&q=80'; // AI Neural Network
+
+// Brand colors
+const NAVY_BLUE = '#001F3F';
+const PURPLE = '#7C3AED';
 
 interface BlobTrail {
   id: number;
@@ -136,12 +141,12 @@ const InteractiveHomePage: React.FC = () => {
   }, [handleMouseMove]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-white cursor-none">
+    <div className="relative w-full h-screen overflow-hidden cursor-none" style={{ backgroundColor: NAVY_BLUE }}>
       {/* Primary Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${AI_AGENT_IMAGE})`,
+          backgroundImage: `url(${PRIMARY_IMAGE})`,
           transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
           transition: 'transform 0.1s ease-out'
         }}
@@ -149,15 +154,16 @@ const InteractiveHomePage: React.FC = () => {
 
       {/* Animated Wave Lines Background */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none opacity-30"
+        className="absolute inset-0 w-full h-full pointer-events-none opacity-40"
         style={{
           transform: `translate(${parallaxOffset.x * 0.5}px, ${parallaxOffset.y * 0.5}px)`
         }}
       >
         <defs>
           <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#00D9FF" stopOpacity="0.3" />
+            <stop offset="0%" stopColor={NAVY_BLUE} stopOpacity="0.4" />
+            <stop offset="50%" stopColor={PURPLE} stopOpacity="0.5" />
+            <stop offset="100%" stopColor={NAVY_BLUE} stopOpacity="0.4" />
           </linearGradient>
         </defs>
 
@@ -231,7 +237,7 @@ const InteractiveHomePage: React.FC = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url(${AI_AGENT_IMAGE})`,
+            backgroundImage: `url(${REVEAL_IMAGE})`,
             maskImage: 'url(#blob-mask)',
             WebkitMaskImage: 'url(#blob-mask)',
             transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
@@ -242,7 +248,7 @@ const InteractiveHomePage: React.FC = () => {
         {/* SVG mask overlay for browser compatibility */}
         <svg width="100%" height="100%" className="absolute inset-0">
           <image
-            href={AI_AGENT_IMAGE}
+            href={REVEAL_IMAGE}
             width="100%"
             height="100%"
             preserveAspectRatio="xMidYMid slice"
@@ -254,11 +260,14 @@ const InteractiveHomePage: React.FC = () => {
       {/* Company Name - Top Left */}
       <div
         ref={companyNameRef}
-        className="absolute top-12 left-12 z-20 transition-colors duration-300"
+        className="absolute top-12 left-12 z-20 transition-all duration-300"
         style={{
-          color: invertedElements.has('company-name') ? 'white' : 'black',
+          color: invertedElements.has('company-name') ? 'white' : NAVY_BLUE,
           fontFamily: "'Playfair Display', serif",
-          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`
+          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`,
+          textShadow: invertedElements.has('company-name')
+            ? `0 0 30px ${PURPLE}, 0 0 60px ${PURPLE}80`
+            : 'none'
         }}
       >
         <div className="text-6xl font-bold leading-tight">
@@ -271,11 +280,14 @@ const InteractiveHomePage: React.FC = () => {
       <a
         ref={portfolioLinkRef}
         href="/services"
-        className="absolute top-12 right-12 z-20 text-2xl font-light transition-colors duration-300 hover:opacity-70"
+        className="absolute top-12 right-12 z-20 text-2xl font-light transition-all duration-300 hover:opacity-70"
         style={{
-          color: invertedElements.has('portfolio-link') ? 'white' : 'black',
+          color: invertedElements.has('portfolio-link') ? 'white' : NAVY_BLUE,
           fontFamily: "'Poppins', sans-serif",
-          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`
+          transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`,
+          textShadow: invertedElements.has('portfolio-link')
+            ? `0 0 20px ${PURPLE}, 0 0 40px ${PURPLE}80`
+            : 'none'
         }}
       >
         Portfolio
@@ -303,7 +315,10 @@ const InteractiveHomePage: React.FC = () => {
             className="transition-all duration-300 hover:scale-110"
             aria-label={label}
             style={{
-              color: invertedElements.has('social-icons') ? 'white' : 'black'
+              color: invertedElements.has('social-icons') ? 'white' : NAVY_BLUE,
+              filter: invertedElements.has('social-icons')
+                ? `drop-shadow(0 0 10px ${PURPLE}) drop-shadow(0 0 20px ${PURPLE}80)`
+                : 'none'
             }}
           >
             <Icon size={28} fill="currentColor" strokeWidth={0} />
@@ -313,7 +328,7 @@ const InteractiveHomePage: React.FC = () => {
 
       {/* Custom Cursor - Main Blob */}
       <div
-        className="fixed pointer-events-none z-50 mix-blend-difference"
+        className="fixed pointer-events-none z-50"
         style={{
           left: blobPos.x,
           top: blobPos.y,
@@ -321,9 +336,10 @@ const InteractiveHomePage: React.FC = () => {
         }}
       >
         <div
-          className="w-8 h-8 rounded-full border-2 border-white"
+          className="w-8 h-8 rounded-full border-2"
           style={{
-            boxShadow: '0 0 20px rgba(255, 255, 255, 0.5)'
+            borderColor: PURPLE,
+            boxShadow: `0 0 20px ${PURPLE}, 0 0 40px ${PURPLE}80`
           }}
         />
       </div>
