@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 
-// AI Agent/Tech themed images - Update these paths with your actual image files
-// Save your AI agent images to the public folder as:
-// - /public/ai-agent-primary.jpg (the professional photo with purple overlay)
-// - /public/ai-agent-reveal.jpg (the wireframe/holographic AI face)
+// AI Agent/Tech themed images
+// Custom images: save to /public/ai-agent-primary.jpg and /public/ai-agent-reveal.jpg
+// Fallback to online images if custom ones aren't found
 const PRIMARY_IMAGE = '/ai-agent-primary.jpg';
 const REVEAL_IMAGE = '/ai-agent-reveal.jpg';
 const LOGO_IMAGE = '/logo.png';
+
+// Fallback images (used if custom images fail to load)
+const FALLBACK_PRIMARY = 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1920&h=1080&fit=crop&q=80';
+const FALLBACK_REVEAL = 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1920&h=1080&fit=crop&q=80';
 
 // Brand colors
 const NAVY_BLUE = '#001F3F';
@@ -28,6 +31,8 @@ const InteractiveHomePage: React.FC = () => {
   const [invertedElements, setInvertedElements] = useState<Set<string>>(new Set());
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const [showHint, setShowHint] = useState(true);
+  const [primaryImg, setPrimaryImg] = useState(PRIMARY_IMAGE);
+  const [revealImg, setRevealImg] = useState(REVEAL_IMAGE);
 
   const trailIdRef = useRef(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
@@ -163,12 +168,20 @@ const InteractiveHomePage: React.FC = () => {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${PRIMARY_IMAGE})`,
+          backgroundImage: `url(${primaryImg})`,
           transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
           transition: 'transform 0.1s ease-out',
           filter: 'brightness(0.85)' // Slightly darken for better text contrast
         }}
-      />
+      >
+        {/* Hidden image for error detection */}
+        <img
+          src={PRIMARY_IMAGE}
+          alt=""
+          style={{ display: 'none' }}
+          onError={() => setPrimaryImg(FALLBACK_PRIMARY)}
+        />
+      </div>
 
       {/* Subtle gradient overlay for depth */}
       <div
@@ -263,19 +276,27 @@ const InteractiveHomePage: React.FC = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url(${REVEAL_IMAGE})`,
+            backgroundImage: `url(${revealImg})`,
             maskImage: 'url(#blob-mask)',
             WebkitMaskImage: 'url(#blob-mask)',
             transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
             transition: 'transform 0.1s ease-out',
             filter: 'brightness(1.1) saturate(1.2)' // Enhance reveal image
           }}
-        />
+        >
+          {/* Hidden image for error detection */}
+          <img
+            src={REVEAL_IMAGE}
+            alt=""
+            style={{ display: 'none' }}
+            onError={() => setRevealImg(FALLBACK_REVEAL)}
+          />
+        </div>
 
         {/* SVG mask overlay for browser compatibility */}
         <svg width="100%" height="100%" className="absolute inset-0">
           <image
-            href={REVEAL_IMAGE}
+            href={revealImg}
             width="100%"
             height="100%"
             preserveAspectRatio="xMidYMid slice"
