@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 
 // AI Agent/Tech themed images
-// Custom images: save to /public/ai-agent-primary.jpg and /public/ai-agent-reveal.jpg
+// Custom images: save to /public/ai-agent-primary.png and /public/ai-agent-reveal.png
 // Fallback to online images if custom ones aren't found
-const PRIMARY_IMAGE = '/ai-agent-primary.jpg';
-const REVEAL_IMAGE = '/ai-agent-reveal.jpg';
+const PRIMARY_IMAGE = '/ai-agent-primary.png';
+const REVEAL_IMAGE = '/ai-agent-reveal.png';
 const LOGO_IMAGE = '/logo.png';
 
 // Fallback images (used if custom images fail to load)

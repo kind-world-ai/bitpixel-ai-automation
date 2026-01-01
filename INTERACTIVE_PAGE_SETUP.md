@@ -10,16 +10,16 @@ To use your **custom** AI agent images, save your images to the `public` folder 
 
 ### Custom Images (Optional):
 
-1. **Primary Background Image**
-   - Filename: `ai-agent-primary.jpg`
-   - Location: `/public/ai-agent-primary.jpg`
+1. **Primary Background Image** ✅ UPLOADED
+   - Filename: `ai-agent-primary.png`
+   - Location: `/public/ai-agent-primary.png`
    - Recommended: Professional photo with purple tech overlay (like the one you showed)
    - Dimensions: 1920x1080 or higher
    - Format: JPG or PNG
 
-2. **Reveal Image** (shown when blob cursor hovers)
-   - Filename: `ai-agent-reveal.jpg`
-   - Location: `/public/ai-agent-reveal.jpg`
+2. **Reveal Image** (shown when blob cursor hovers) ✅ UPLOADED
+   - Filename: `ai-agent-reveal.png`
+   - Location: `/public/ai-agent-reveal.png`
    - Recommended: Wireframe/holographic AI face visualization
    - Dimensions: 1920x1080 or higher
    - Format: JPG or PNG
