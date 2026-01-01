@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 
-// AI Agent/Tech themed images
-const PRIMARY_IMAGE = 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1920&h=1080&fit=crop&q=80'; // AI/Tech workspace
-const REVEAL_IMAGE = 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1920&h=1080&fit=crop&q=80'; // AI Neural Network
+// AI Agent/Tech themed images - Update these paths with your actual image files
+// Save your AI agent images to the public folder as:
+// - /public/ai-agent-primary.jpg (the professional photo with purple overlay)
+// - /public/ai-agent-reveal.jpg (the wireframe/holographic AI face)
+const PRIMARY_IMAGE = '/ai-agent-primary.jpg';
+const REVEAL_IMAGE = '/ai-agent-reveal.jpg';
+const LOGO_IMAGE = '/logo.png';
 
 // Brand colors
 const NAVY_BLUE = '#001F3F';
@@ -23,6 +27,7 @@ const InteractiveHomePage: React.FC = () => {
   const [blobTrails, setBlobTrails] = useState<BlobTrail[]>([]);
   const [invertedElements, setInvertedElements] = useState<Set<string>>(new Set());
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+  const [showHint, setShowHint] = useState(true);
 
   const trailIdRef = useRef(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
@@ -140,6 +145,18 @@ const InteractiveHomePage: React.FC = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [handleMouseMove]);
 
+  // Hide hint after mouse movement or timeout
+  useEffect(() => {
+    const timeout = setTimeout(() => setShowHint(false), 4000);
+    const handleFirstMove = () => setShowHint(false);
+
+    window.addEventListener('mousemove', handleFirstMove, { once: true });
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('mousemove', handleFirstMove);
+    };
+  }, []);
+
   return (
     <div className="relative w-full h-screen overflow-hidden cursor-none" style={{ backgroundColor: NAVY_BLUE }}>
       {/* Primary Background Image */}
@@ -148,7 +165,16 @@ const InteractiveHomePage: React.FC = () => {
         style={{
           backgroundImage: `url(${PRIMARY_IMAGE})`,
           transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
-          transition: 'transform 0.1s ease-out'
+          transition: 'transform 0.1s ease-out',
+          filter: 'brightness(0.85)' // Slightly darken for better text contrast
+        }}
+      />
+
+      {/* Subtle gradient overlay for depth */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 50% 50%, transparent 0%, ${NAVY_BLUE}20 100%)`
         }}
       />
 
@@ -241,7 +267,8 @@ const InteractiveHomePage: React.FC = () => {
             maskImage: 'url(#blob-mask)',
             WebkitMaskImage: 'url(#blob-mask)',
             transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
-            transition: 'transform 0.1s ease-out'
+            transition: 'transform 0.1s ease-out',
+            filter: 'brightness(1.1) saturate(1.2)' // Enhance reveal image
           }}
         />
 
@@ -257,22 +284,37 @@ const InteractiveHomePage: React.FC = () => {
         </svg>
       </div>
 
-      {/* Company Name - Top Left */}
+      {/* Company Logo & Name - Top Left */}
       <div
         ref={companyNameRef}
-        className="absolute top-12 left-12 z-20 transition-all duration-300"
+        className="absolute top-8 left-8 z-20 transition-all duration-300"
         style={{
-          color: invertedElements.has('company-name') ? 'white' : NAVY_BLUE,
-          fontFamily: "'Playfair Display', serif",
           transform: `translate(${parallaxOffset.x * 1.5}px, ${parallaxOffset.y * 1.5}px)`,
-          textShadow: invertedElements.has('company-name')
-            ? `0 0 30px ${PURPLE}, 0 0 60px ${PURPLE}80`
-            : 'none'
         }}
       >
-        <div className="text-6xl font-bold leading-tight">
-          <div>BitPixel</div>
-          <div>Coders</div>
+        {/* Logo */}
+        <img
+          src={LOGO_IMAGE}
+          alt="BitPixel Coders"
+          className="w-48 md:w-64 mb-4 transition-all duration-300"
+          style={{
+            filter: invertedElements.has('company-name')
+              ? `drop-shadow(0 0 20px ${PURPLE}) drop-shadow(0 0 40px ${PURPLE}80) brightness(1.2)`
+              : 'brightness(1)',
+          }}
+        />
+        {/* Tagline */}
+        <div
+          className="text-lg md:text-xl font-light tracking-wide"
+          style={{
+            color: invertedElements.has('company-name') ? 'white' : NAVY_BLUE,
+            fontFamily: "'Poppins', sans-serif",
+            textShadow: invertedElements.has('company-name')
+              ? `0 0 20px ${PURPLE}, 0 0 40px ${PURPLE}80`
+              : 'none'
+          }}
+        >
+          AI Automation Experts
         </div>
       </div>
 
@@ -326,6 +368,34 @@ const InteractiveHomePage: React.FC = () => {
         ))}
       </div>
 
+      {/* Interactive Hint - Center */}
+      {showHint && (
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 text-center pointer-events-none"
+          style={{
+            animation: 'fadeIn 1s ease-in-out, fadeOut 1s ease-in-out 3s forwards'
+          }}
+        >
+          <div
+            className="text-xl md:text-2xl font-light tracking-wider mb-4"
+            style={{
+              color: 'white',
+              fontFamily: "'Poppins', sans-serif",
+              textShadow: `0 0 30px ${PURPLE}, 0 0 60px ${PURPLE}80, 0 2px 10px rgba(0,0,0,0.5)`
+            }}
+          >
+            Move your cursor to explore
+          </div>
+          <div
+            className="w-16 h-16 mx-auto rounded-full border-2 animate-pulse"
+            style={{
+              borderColor: PURPLE,
+              boxShadow: `0 0 30px ${PURPLE}, 0 0 60px ${PURPLE}80`
+            }}
+          />
+        </div>
+      )}
+
       {/* Custom Cursor - Main Blob */}
       <div
         className="fixed pointer-events-none z-50"
@@ -344,9 +414,19 @@ const InteractiveHomePage: React.FC = () => {
         />
       </div>
 
-      {/* Load Playfair Display font */}
+      {/* Load Playfair Display font and animations */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translate(-50%, -40%); }
+          to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
       `}</style>
     </div>
   );
