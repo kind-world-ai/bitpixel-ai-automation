@@ -15,6 +15,7 @@ import BitPixelGICascade from './pages/BitPixelGICascade';
 import ParticleGridExperience from './pages/ParticleGridExperience';
 import ShaderBackgroundDemo from './pages/ShaderBackgroundDemo';
 import InteractiveHomePage from './pages/InteractiveHomePage';
+import VideoHeroPage from './pages/VideoHeroPage';
 import ThemeDemo from './components/ThemeDemo';
 import './App.css';
 
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         {/* Immersive full-screen experiences - outside Layout */}
         <Route path="/interactive" element={<InteractiveHomePage />} />
+        <Route path="/video-hero" element={<VideoHeroPage />} />
         <Route path="particle-grid" element={<ParticleGridExperience />} />
         <Route path="shader-backgrounds" element={<ShaderBackgroundDemo />} />
 
